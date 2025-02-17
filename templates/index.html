@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List</title>
+</head>
+<body>
+    <h1>My To-Do List</h1>
+    <form action="/add" method="post">
+        <input type="text" name="task" placeholder="Enter a task" required>
+        <input type="date" name="date" placeholder="Enter a due date" required>
+        <button type="submit">Add Task</button>
+    </form>
+    <ul>
+        {% for task in tasks %}
+            <li>
+                <input type="checkbox" onchange="toggleCompleted({{ loop.index0 }})" {% if task.completed %}checked{% endif %}>
+                <span {% if task.completed %}style="text-decoration: line-through;"{% endif %}>
+                    {{ task.name }}</span> Due Date: {{ task.date }}
+                <a href="/delete/{{ loop.index0 }}">❌</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div>
+        <div id='container'>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" id="flash-message">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+    <form action="/delete_all" method="post">
+        <button type="submit">Delete All Tasks</button>
+    </form>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+<script>
+    function toggleCompleted(taskId) {
+        fetch(`/mark_completed/${taskId}`, {
+            method: 'PUT'
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+    window.onload = function() {
+        setTimeout(function() {
+            var flashMessage = document.getElementById('flash-message');
+            if (flashMessage) {
+                flashMessage.style.display = 'none';
+            }
+        }, 3000);
+    };
+</script>
+</body>
+</html>
